@@ -28,7 +28,7 @@ def scrape_lead_list(lead_list_name):
             signin_button = browser.find_element_by_xpath(
                 '//*[@id="app__container"]/main/div[2]/form/div[3]/button')
             signin_button.click()
-            print('Signed in')
+            print('\nSigned in, loading hompage...')
         except NoSuchElementException():
             exit(1)
 
@@ -38,7 +38,7 @@ def scrape_lead_list(lead_list_name):
         try:
             lead_lists = browser.find_element_by_id('ember14')
             lead_lists.click()
-            print('Loading Lead Lists page')
+            print('\nLoading lead lists page...')
         except NoSuchElementException():
             exit(1)
 
@@ -49,7 +49,7 @@ def scrape_lead_list(lead_list_name):
             lead_list = browser.find_element_by_xpath(
                 f"//*[text()='{lead_list_name}']//ancestor::a")
             lead_list.click()
-            print('Loading target Lead List')
+            print('\nLoading target lead list...')
         except NoSuchElementException():
             exit(1)
 
@@ -59,7 +59,7 @@ def scrape_lead_list(lead_list_name):
         try:
             leads = browser.find_elements_by_class_name(
                 'lists-detail__view-profile-name-link')
-            print('Saving lead elements to list')
+            print(f'\nSaving {len(leads)} lead elements to list...')
         except NoSuchElementException():
             exit(1)
 
@@ -68,19 +68,19 @@ def scrape_lead_list(lead_list_name):
 
         # check list validity and exit
         if len(list_of_lead_links) > 1:
-            print('List of lead links created')
+            print('\nList of lead links created')
             return list_of_lead_links
         else:
-            print('Returned empty list')
+            print('\nError: empty list')
             exit(1)
 
 
 def write_to_excel(link_list, lead_list_name):
     if len(link_list) < 1:
-        print('List empty!')
+        print('\nList empty!')
         exit(1)
 
-    print('Writing list to excel')
+    print('\nWriting list to excel...')
     title = ((lead_list_name.split()[0]) + ' leads')
     wb = Workbook()
     sheet = wb.create_sheet('lead list', 0)
@@ -94,7 +94,7 @@ def write_to_excel(link_list, lead_list_name):
 
     wb.save(f'{title}.xlsx')
 
-    print(f'Created {title} lead list')
+    print(f'\nSaved {len(link_list)} lead links to {title}.xlsx')
 
 
 leads = (scrape_lead_list(lead_list_name))
