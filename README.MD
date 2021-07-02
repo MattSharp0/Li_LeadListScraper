@@ -1,4 +1,4 @@
-This program (app.py) returns an excel document of linkedin profile links from a proivded linkedin sales navigator lead list.
+This program (app.py) returns an excel document of linkedin profile links from a provided linkedin sales navigator lead list.
 
 It is composed of two parts:
 
