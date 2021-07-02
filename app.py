@@ -68,7 +68,7 @@ def scrape_lead_list(lead_list_name):
 
         # check list validity and exit
         if len(list_of_lead_links) > 1:
-            print('\nList of lead links created')
+            print('\nList of lead links created!')
             return list_of_lead_links
         else:
             print('\nError: empty list')
