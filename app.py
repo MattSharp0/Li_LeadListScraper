@@ -7,6 +7,11 @@ from config import USERNAME, PASSWORD
 
 lead_list_name = input('Type lead list name: ')
 
+'''
+Commented out write to excel funtion call
+Set scrape to no longer run headless
+'''
+
 
 def scrape_lead_list(lead_list_name):
     '''
@@ -19,8 +24,10 @@ def scrape_lead_list(lead_list_name):
 
     # set webdriver options
     options = Options()
-    options.add_argument('--headless')
-    options.add_argument('window-size=1920x1080')
+
+    # UNCOMMENT BELOW OPTIONS
+    # options.add_argument('--headless')
+    # options.add_argument('window-size=1920x1080')
 
     # create driver object
     with webdriver.Chrome(options=options) as browser:
@@ -68,7 +75,7 @@ def scrape_lead_list(lead_list_name):
         lead_list.click()
         print('\nLoading target lead list...')
 
-        # wait for target Lead List to load, then add <a> elements to list
+        # Wait for target Lead List to load
         try:
             WebDriverWait(browser, 10).until(lambda b: b.find_elements_by_class_name(
                 'lists-detail__view-profile-name-link'))
@@ -76,12 +83,47 @@ def scrape_lead_list(lead_list_name):
             print('\nTimed out loading lead list')
             exit(1)
 
-        leads = browser.find_elements_by_class_name(
-            'lists-detail__view-profile-name-link')
-        print(f'\nSaving {len(leads)} lead elements to list...')
+        def create_list_of_links(loaded=False):
+            '''
+            Finds and adds profile links to list
 
-        # Get url (href) from a tag and add to list
-        list_of_lead_links = [lead.get_attribute('href') for lead in leads]
+            Takes optional bolean parameter loaded
+
+            Returns current_page_links
+            '''
+            if not loaded:
+                WebDriverWait(browser, 10).until(lambda b: b.find_elements_by_class_name(
+                    'lists-detail__view-profile-name-link'))
+
+            profile_links = browser.find_elements_by_class_name(
+                'lists-detail__view-profile-name-link')
+            print(f'\nSaving {len(profile_links)} lead elements to list...')
+
+            current_page_links = [profile_link.get_attribute(
+                'href') for profile_link in profile_links]
+
+            return current_page_links
+
+        list_of_lead_links = create_list_of_links(loaded=True)
+
+        # Create list of pages
+        pages = browser.find_elements_by_class_name(
+            'artdeco-pagination__indicator--number')
+        current_page = browser.find_element_by_xpath(
+            '//*[@class="artdeco-pagination__indicator--number active selected"]/button/span[1]')
+        current_page_number = current_page.text
+
+        if len(pages) > 1:
+            # got to next page and find links, repeat until next button no longer visible
+            pass
+
+        # # Add <a> tag href attribute to list
+        # profile_links = browser.find_elements_by_class_name(
+        #     'lists-detail__view-profile-name-link')
+        # print(f'\nSaving {len(profile_links)} lead elements to list...')
+
+        # list_of_lead_links = [profile_link.get_attribute(
+        #     'href') for profile_link in profile_links]
 
         # check list validity and exit
         if len(list_of_lead_links) > 1:
@@ -133,4 +175,4 @@ def write_to_excel(link_list, lead_list_name):
 leads = (scrape_lead_list(lead_list_name))
 # print(leads)
 
-write_to_excel(leads, lead_list_name)
+# write_to_excel(leads, lead_list_name)
