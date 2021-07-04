@@ -1,11 +1,12 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException
 from openpyxl import Workbook
 from config import USERNAME, PASSWORD
 
-lead_list_name = input('Type lead list name: ')
+# lead_list_name = input('Type lead list name: ')
+lead_list_name = 'bb&t (now truist) [jc] [submitted]'
 
 '''
 Commented out write to excel funtion call
@@ -17,120 +18,162 @@ def scrape_lead_list(lead_list_name):
     '''
     Scrapes LinkedIn profile links from provided sales navigator lead list and returns them as a list.
 
-    Requires String Arg: lead_list_name
+    :Args:
+    list: lead_list_name
 
+    :Returns:
+    list of lead links
+
+    Note:
     Requires sales navigator credentials imported as USERNAME and PASSWORD
     '''
 
     # set webdriver options
     options = Options()
 
-    # UNCOMMENT BELOW OPTIONS
-    # options.add_argument('--headless')
-    # options.add_argument('window-size=1920x1080')
+    options.add_argument('--headless')
+    options.add_argument('window-size=1920x1080')
 
     # create driver object
     with webdriver.Chrome(options=options) as browser:
         # load sales navigator
         browser.get('https://www.linkedin.com/sales')
+        print('\n  Chrome driver object created\n    Signing into LinkedIn Sales Nav...')
 
-        # sign in
-        username_box = browser.find_element_by_id('username')
-        username_box.send_keys(USERNAME)
-        password_box = browser.find_element_by_id('password')
-        password_box.send_keys(PASSWORD)
+        # Sign in
+        try:
+            username_box = browser.find_element_by_id('username')
+            username_box.send_keys(USERNAME)
+            password_box = browser.find_element_by_id('password')
+            password_box.send_keys(PASSWORD)
 
-        signin_button = browser.find_element_by_xpath(
-            '//*[@id="app__container"]/main/div[2]/form/div[3]/button')
-        signin_button.click()
-        print('\nSigned in, loading hompage...')
+            signin_button = browser.find_element_by_xpath(
+                '//*[@id="app__container"]/main/div[2]/form/div[3]/button')
+            signin_button.click()
+            print('\n  Signed in!\n    Loading homepage...')
+        except NoSuchElementException as e:
+            print(e)
+            exit()
+        except StaleElementReferenceException as e:
+            print(e)
+            exit()
 
         # Wait for homepage to load, then go to Lead lists
         try:
             WebDriverWait(browser, 10).until(
                 lambda b: b.find_element_by_id('ember14'))
-        except TimeoutException():
-            print(
-                '\nTimed out loading homepage; could not find "Lead Lists" element (id=ember14)')
+            print('\n  Homepage loaded!')
+
+            lead_lists = browser.find_element_by_id('ember14')
+            lead_lists.click()
+            print('    Loading lead lists page...')
+        except TimeoutException as e:
+            print(e)
+            exit(1)
+        except StaleElementReferenceException as e:
+            print(e)
+            exit(1)
+        except NoSuchElementException as e:
+            print(e)
             exit(1)
 
-        lead_lists = browser.find_element_by_id('ember14')
-        lead_lists.click()
-        print('\nLoading lead lists page...')
-
-        # Wait for Lead lists to load, then go to specified list
+        # Wait for Lead lists to load
         try:
             WebDriverWait(browser, 10).until(lambda b: b.find_element_by_xpath(
                 f"//*[text()='{lead_list_name}']//ancestor::a"))
-        except TimeoutException():
-            print(f'\nTimed out loading "{lead_list_name}" element')
-            exit(1)
-        except NoSuchElementException():
-            print(
-                f'\nCould not find "{lead_list_name}" on page')
-            exit(1)
+            print('\n  Lead lists page loaded!')
+        except TimeoutException as e:
+            print(e)
+            exit()
 
-        lead_list = browser.find_element_by_xpath(
-            f"//*[text()='{lead_list_name}']//ancestor::a")
-        lead_list.click()
-        print('\nLoading target lead list...')
-
-        # Wait for target Lead List to load
+        # Go to target lead list
         try:
-            WebDriverWait(browser, 10).until(lambda b: b.find_elements_by_class_name(
-                'lists-detail__view-profile-name-link'))
-        except TimeoutException():
-            print('\nTimed out loading lead list')
-            exit(1)
+            browser.find_element_by_xpath(
+                f"//*[text()='{lead_list_name}']//ancestor::a").click()
+            print(f'    Loading target lead list: {lead_list_name}...')
+        except StaleElementReferenceException as e:
+            print(
+                f'\nError: Lead list: "{lead_list_name}" is no longer visible\n')
+            print(e)
+            exit()
+        except NoSuchElementException as e:
+            print(f'Error: Could not find list: "{lead_list_name}"')
+            print(e)
+            exit()
 
-        def create_list_of_links(loaded=False):
+        def create_list_of_links(page_loaded=False):
             '''
             Finds and adds profile links to list
 
-            Takes optional bolean parameter loaded
+            :Args:
+            page_loaded: Optional bolean parameter
 
-            Returns current_page_links
+            :Returns:
+            current_page_links - a list of profile links from page
             '''
-            if not loaded:
+            if not page_loaded:
                 WebDriverWait(browser, 10).until(lambda b: b.find_elements_by_class_name(
                     'lists-detail__view-profile-name-link'))
+                print('\n  Target lead list page loaded!')
 
+            print('\n    Scraping lead profile links...')
             profile_links = browser.find_elements_by_class_name(
                 'lists-detail__view-profile-name-link')
-            print(f'\nSaving {len(profile_links)} lead elements to list...')
 
             current_page_links = [profile_link.get_attribute(
                 'href') for profile_link in profile_links]
 
+            print(f'\n  Saved {len(profile_links)} lead links to list!')
             return current_page_links
 
-        list_of_lead_links = create_list_of_links(loaded=True)
+        # Handle multiple pages:
 
-        # Create list of pages
-        pages = browser.find_elements_by_class_name(
-            'artdeco-pagination__indicator--number')
-        current_page = browser.find_element_by_xpath(
-            '//*[@class="artdeco-pagination__indicator--number active selected"]/button/span[1]')
-        current_page_number = current_page.text
+        def get_current_page_number():
+            # Wait for page numbers to load
+            WebDriverWait(browser, 10).until(lambda b: b.find_elements_by_class_name(
+                'artdeco-pagination__indicator--number'))
 
-        if len(pages) > 1:
-            # got to next page and find links, repeat until next button no longer visible
-            pass
+            # Find current page number
+            current_page = browser.find_element_by_xpath(
+                '//*[@class="artdeco-pagination__indicator artdeco-pagination__indicator--number active selected ember-view"]/button/span[1]')
+            current_page_number = current_page.text
+            return int(current_page_number)
 
-        # # Add <a> tag href attribute to list
-        # profile_links = browser.find_elements_by_class_name(
-        #     'lists-detail__view-profile-name-link')
-        # print(f'\nSaving {len(profile_links)} lead elements to list...')
+        # Get number of pages
+        pages = len(browser.find_elements_by_class_name(
+            'artdeco-pagination__indicator--number'))
 
-        # list_of_lead_links = [profile_link.get_attribute(
-        #     'href') for profile_link in profile_links]
+        # Get current page:
+        current_page = get_current_page_number()
+
+        # Main list of links to be returned
+        list_of_lead_links = create_list_of_links(page_loaded=False)
+
+        # While multiple pages exist, go page by page and copy lead links to list
+        while current_page < pages:
+            print(f'\n    {pages} pages detected...')
+            # Find and click next page button
+            next_page = browser.find_element_by_class_name(
+                'artdeco-pagination__button--next')
+            next_page.click()
+
+            # Increment page number
+            current_page += 1
+            print(f'\n    Loading page {current_page}/{pages}...')
+
+            list_of_lead_links.append(current_page)
+
+            # Add links to main list
+            for link in create_list_of_links(page_loaded=False):
+                list_of_lead_links.append(link)
 
         # check list validity and exit
-        if len(list_of_lead_links) > 1:
-            print('\nList of lead links created!')
+        total_leads = len(list_of_lead_links)
+        if total_leads > 1:
+            print(f'\nScrape complete!\n{total_leads} links added to list')
             return list_of_lead_links
         else:
-            print('\nError: empty list')
+            print('\nError! List is empty')
             exit(1)
 
 
@@ -173,6 +216,6 @@ def write_to_excel(link_list, lead_list_name):
 
 
 leads = (scrape_lead_list(lead_list_name))
-# print(leads)
+print(leads)
 
 # write_to_excel(leads, lead_list_name)
