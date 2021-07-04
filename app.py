@@ -6,7 +6,10 @@ from openpyxl import Workbook
 from config import USERNAME, PASSWORD
 
 # lead_list_name = input('Type lead list name: ')
-lead_list_name = 'bb&t (now truist) [jc] [submitted]'
+
+# test lists:
+# lead_list_name = 'bb&t (now truist) [jc] [submitted]'
+lead_list_name = 'Ambassador [MH] [submitted]'
 
 '''
 Commented out write to excel funtion call
@@ -31,8 +34,8 @@ def scrape_lead_list(lead_list_name):
     # set webdriver options
     options = Options()
 
-    options.add_argument('--headless')
-    options.add_argument('window-size=1920x1080')
+    # options.add_argument('--headless')
+    # options.add_argument('window-size=1920x1080')
 
     # create driver object
     with webdriver.Chrome(options=options) as browser:
@@ -116,14 +119,14 @@ def scrape_lead_list(lead_list_name):
                     'lists-detail__view-profile-name-link'))
                 print('\n  Target lead list page loaded!')
 
-            print('\n    Scraping lead profile links...')
+            print('    Scraping lead profile links...')
             profile_links = browser.find_elements_by_class_name(
                 'lists-detail__view-profile-name-link')
 
             current_page_links = [profile_link.get_attribute(
                 'href') for profile_link in profile_links]
 
-            print(f'\n  Saved {len(profile_links)} lead links to list!')
+            print(f'\n  Saved {len(profile_links)} links from page to list!')
             return current_page_links
 
         # Handle multiple pages:
@@ -139,13 +142,17 @@ def scrape_lead_list(lead_list_name):
             current_page_number = current_page.text
             return int(current_page_number)
 
-        # Get number of pages
-        pages = len(browser.find_elements_by_class_name(
-            'artdeco-pagination__indicator--number'))
-        print(f'\n    Found {pages} pages...')
-
         # Get current page:
         current_page = get_current_page_number()
+        print(f'\n  On page {current_page}')
+
+        # Get number of pages
+        WebDriverWait(browser, 10).until(lambda b: b.find_elements_by_class_name(
+            'artdeco-pagination__indicator'))
+
+        pages = len(browser.find_elements_by_class_name(
+            'artdeco-pagination__indicator'))
+        print(f'\n    Found {pages} pages...')
 
         # Main list of links to be returned
         list_of_lead_links = create_list_of_links(page_loaded=False)
@@ -153,14 +160,18 @@ def scrape_lead_list(lead_list_name):
         # While multiple pages exist, go page by page and copy lead links to list
         while current_page < pages:
             # Find and click next page button
+            WebDriverWait(browser, 10).until(lambda b: b.find_elements_by_class_name(
+                'artdeco-pagination__button--next'))
+
             next_page = browser.find_element_by_class_name(
                 'artdeco-pagination__button--next')
             next_page.click()
 
-            # Increment page number
-            current_page += 1
+            # Update current page number
+            current_page = get_current_page_number()
             print(f'\n    Loading page {current_page}/{pages}...')
 
+            # For debugging:
             list_of_lead_links.append(current_page)
 
             # Add links to main list
