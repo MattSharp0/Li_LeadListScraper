@@ -142,6 +142,7 @@ def scrape_lead_list(lead_list_name):
         # Get number of pages
         pages = len(browser.find_elements_by_class_name(
             'artdeco-pagination__indicator--number'))
+        print(f'\n    Found {pages} pages...')
 
         # Get current page:
         current_page = get_current_page_number()
@@ -151,7 +152,6 @@ def scrape_lead_list(lead_list_name):
 
         # While multiple pages exist, go page by page and copy lead links to list
         while current_page < pages:
-            print(f'\n    {pages} pages detected...')
             # Find and click next page button
             next_page = browser.find_element_by_class_name(
                 'artdeco-pagination__button--next')
