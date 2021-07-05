@@ -8,10 +8,14 @@ from config import USERNAME, PASSWORD
 # lead_list_name = input('Type lead list name: ')
 
 # test lists:
-# lead_list_name = 'bb&t (now truist) [jc] [submitted]'
-lead_list_name = 'Ambassador [MH] [submitted]'
+# 3 Page, 54 lead list
+lead_list_name = 'bb&t (now truist) [jc] [submitted]'
+# 1 Page, 10 lead list
+# lead_list_name = 'Ambassador [MH] [submitted]'
 
 '''
+Working on multipage support. 
+Inconsistent detection of multipule pages and not detecting more than 2
 Commented out write to excel funtion call
 Set scrape to no longer run headless
 '''
@@ -148,10 +152,10 @@ def scrape_lead_list(lead_list_name):
 
         # Get number of pages
         WebDriverWait(browser, 10).until(lambda b: b.find_elements_by_class_name(
-            'artdeco-pagination__indicator'))
+            'artdeco-pagination__indicator--number'))
 
         pages = len(browser.find_elements_by_class_name(
-            'artdeco-pagination__indicator'))
+            'artdeco-pagination__indicator--number'))
         print(f'\n    Found {pages} pages...')
 
         # Main list of links to be returned
