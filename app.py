@@ -1,7 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException, ElementClickInterceptedException
 from openpyxl import Workbook
 from config import USERNAME, PASSWORD
 
@@ -9,7 +9,7 @@ from config import USERNAME, PASSWORD
 
 # test lists:
 # 3 Page, 54 lead list
-lead_list_name = 'bb&t (now truist) [jc] [submitted]'
+lead_list_name = 'CaptialOne [mh]'
 # 1 Page, 10 lead list
 # lead_list_name = 'Ambassador [MH] [submitted]'
 
@@ -164,12 +164,16 @@ def scrape_lead_list(lead_list_name):
         # While multiple pages exist, go page by page and copy lead links to list
         while current_page < pages:
             # Find and click next page button
-            WebDriverWait(browser, 10).until(lambda b: b.find_elements_by_class_name(
-                'artdeco-pagination__button--next'))
+            try:
+                WebDriverWait(browser, 10).until(lambda b: b.find_elements_by_class_name(
+                    'artdeco-pagination__button--next'))
 
-            next_page = browser.find_element_by_class_name(
-                'artdeco-pagination__button--next')
-            next_page.click()
+                next_page = browser.find_element_by_class_name(
+                    'artdeco-pagination__button--next')
+                next_page.click()
+            except ElementClickInterceptedException as e:
+                print(e)
+                exit(1)
 
             # Update current page number
             current_page = get_current_page_number()
