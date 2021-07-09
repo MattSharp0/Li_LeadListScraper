@@ -5,19 +5,22 @@ from selenium.common.exceptions import NoSuchElementException, StaleElementRefer
 from openpyxl import Workbook
 from config import CREDENTIALS
 
-# lead_list_name = input('Type lead list name: ')
+lead_list_name = str(input('Type lead list name: '))
 
 # test lists:
-# 3 Page, 54 lead list
-lead_list_name = 'CaptialOne [mh]'
-# 1 Page, 10 lead list
-# lead_list_name = 'Ambassador [MH] [submitted]'
+# lead_list_name = 'CaptialOne [mh]'
 
 '''
 Current bugs:
->ElementClickInterceptedException when scraping list more than 2 pages 
+>Not scraping second page links (adds 1st page links again)
+>ElementClickInterceptedException when clicking next page after 2nd page
 >Inconsistent detection of multipule pages
 
+Improvements to make: 
+>Save Excel doc to specific path
+>Scrape name and title
+>Check for and remove duplicates
+>Take flag for running headless
 '''
 
 
@@ -130,6 +133,7 @@ class scraper(webdriver.Chrome):
         pages = len(self.find_elements_by_class_name(
             'artdeco-pagination__indicator--number'))
 
+        print(f'\n  Page: {current_page_number}/{pages}')
         return int(current_page_number), pages
 
     def create_list_of_links(self):
@@ -162,9 +166,9 @@ def write_to_excel(link_list, lead_list_name):
     '''
     Takes a list of links and writes them to an excel document with the list name as the title
 
-    Requires list of strings/ints
-
-    Requires list name
+    :Params:
+    List: link_list: list of strings
+    Str: lead_list_name: name of lead list
     '''
 
     # Quit if list has no items
@@ -218,26 +222,30 @@ with scraper(options=options) as browser:
             next_page = browser.find_element_by_class_name(
                 'artdeco-pagination__button--next')
             next_page.click()
+            print('\n    Loading next page...')
         except ElementClickInterceptedException as e:
             print(e)
             exit(1)
 
         # Update current page number
         current_page, pages = browser.get_page_numbers()
-        print(f'\n    Loading page {current_page}/{pages}...')
 
         # For debugging:
         list_of_lead_links.append(f'{current_page}/{pages}')
 
         # Add links to main list
-        for link in browser.create_list_of_links():
+        browser.implicitly_wait(5)
+
+        current_page_links = browser.create_list_of_links()
+
+        for link in current_page_links:
             list_of_lead_links.append(link)
 
     # check list validity and exit
     if len(list_of_lead_links) > 1:
         print(
             f'\nScrape complete!\n{len(list_of_lead_links)} links added to list')
-        write_to_excel(lead_list_name, list_of_lead_links)
+        write_to_excel(list_of_lead_links, lead_list_name,)
     else:
         print('\nError! List is empty')
         exit(1)
