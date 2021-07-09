@@ -14,10 +14,10 @@ lead_list_name = 'CaptialOne [mh]'
 # lead_list_name = 'Ambassador [MH] [submitted]'
 
 '''
-Working on multipage support. 
-Inconsistent detection of multipule pages and not detecting more than 2
-Commented out write to excel funtion call
-Set scrape to no longer run headless
+Current bugs:
+>ElementClickInterceptedException when scraping list more than 2 pages 
+>Inconsistent detection of multipule pages
+
 '''
 
 
@@ -28,17 +28,16 @@ class scraper(webdriver.Chrome):
 
     def go_to_lead_list(self, credentials, lead_list_name):
         '''
-        Scrapes LinkedIn profile links from provided sales navigator lead list and returns them as a list.
+        Navigates to Sales Nav lead list and returns drier object on page
 
         :Args:
-        list: lead_list_name
+        credentials: dict: LinkedIn sales nav login and password
+        lead_list_name: str: lead list title
 
         :Returns:
-        list of lead links
-
-        Note:
-        Requires sales navigator credentials imported as USERNAME and PASSWORD
+        Chrome webdriver on lead list page
         '''
+
         USERNAME, PASSWORD = credentials['USERNAME'], credentials['PASSWORD']
 
         # load sales navigator
@@ -141,7 +140,7 @@ class scraper(webdriver.Chrome):
         Self: driver: Selenium driver on list page
 
         :Returns:
-        current_page_links - a list of profile links from page
+        list: current_page_links: a list of profile links from page
         '''
 
         WebDriverWait(self, 10).until(lambda b: b.find_elements_by_class_name(
