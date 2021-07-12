@@ -1,6 +1,4 @@
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import ElementClickInterceptedException
 from scraper import ScraperDriver
 from xlsx_writer import write_to_excel
 from config import CREDENTIALS
@@ -12,57 +10,45 @@ Current bugs:
 >Inconsistent detection of multipule pages (detecting incorrect amount)
 
 Improvements to make: 
+>Find by link instead of list name
+    >Signin
+    >Load homepage
+    >Go to list link
+    >Get list title
+    >Scrape and write to excel
 >Save Excel doc to specific path
 >Scrape lead name and title
 >Check for and remove duplicates
 >Take flag for running headless
 '''
 
-lead_list_name = str(input('Type lead list name: '))
+# lead_list_name = str(input('Type lead list name: '))
 
 # test lists:
+lead_list_name = 'Vanguard [mh]'
 # lead_list_name = 'CaptialOne [mh]'
 
 options = Options()
-# options.add_argument('--headless')
-# options.add_argument('window-size=1920x1080')
+options.add_argument('--headless')
+options.add_argument('window-size=1920x1080')
 
 # create driver object
 with ScraperDriver(options=options) as browser:
+    # Load linkedin sales nav, sign in and find list
     browser.go_to_lead_list(CREDENTIALS, lead_list_name)
 
+    # Get number of pages and links
+    current_page, pages, page_links = browser.get_list_pages()
+
+    # Scape leads of first page
     list_of_lead_links = browser.scrape_leads()
 
-    current_page, pages = browser.get_page_numbers()
-
-    # While multiple pages exist, go page by page and copy lead links to list
-    while current_page < pages:
-        # Find and click next page button
-        try:
-            WebDriverWait(browser, 10).until(lambda b: b.find_elements_by_class_name(
-                'artdeco-pagination__button--next'))
-
-            next_page = browser.find_element_by_class_name(
-                'artdeco-pagination__button--next')
-            next_page.click()
-            print('\n    Loading next page...')
-        except ElementClickInterceptedException as e:
-            print(e)
-            exit(1)
-
-        # Update current page number
-        current_page, pages = browser.get_page_numbers()
-
-        # For debugging:
-        list_of_lead_links.append(f'{current_page}/{pages}')
-
-        # Add links to main list
-        browser.implicitly_wait(5)
-
-        current_page_links = browser.create_list_of_links()
-
-        for link in current_page_links:
-            list_of_lead_links.append(link)
+    # Iterate through pages, scrape leads and append to list
+    for page in page_links:
+        browser.get(page)
+        current_page_leads = browser.scrape_leads()
+        for lead in current_page_leads:
+            list_of_lead_links.append(lead)
 
     # check list validity and exit
     if len(list_of_lead_links) > 1:

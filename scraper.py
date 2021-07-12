@@ -91,13 +91,14 @@ class ScraperDriver(webdriver.Chrome):
 
         return self
 
-    def get_page_numbers(self):
+    def get_list_pages(self):
         '''
         Finds current lead list page number and total number of pages
 
         :Returns:
         int: current page number
         int: number of pages
+        list: page urls
         '''
         # Wait for page numbers to load
         WebDriverWait(self, 10).until(lambda b: b.find_elements_by_class_name(
@@ -108,11 +109,19 @@ class ScraperDriver(webdriver.Chrome):
             '//*[@class="artdeco-pagination__indicator artdeco-pagination__indicator--number active selected ember-view"]/button/span[1]')
         current_page_number = current_page.text
 
+        # Find total pages
         pages = len(self.find_elements_by_class_name(
             'artdeco-pagination__indicator--number'))
 
-        print(f'\n  Page: {current_page_number}/{pages}')
-        return int(current_page_number), pages
+        current_page_link = self.current_url
+        page_split = str(current_page_link).split('?')
+        page_urls = []
+
+        for page in range(2, (pages+1)):
+            page_url = f'?page={page}&'.join(page_split)
+            page_urls.append(page_url)
+
+        return int(current_page_number), pages, page_urls
 
     def scrape_leads(self):
         '''
