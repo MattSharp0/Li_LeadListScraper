@@ -1,21 +1,16 @@
 from selenium.webdriver.chrome.options import Options
 from scraper import ScraperDriver
 from excel_writer import write_to_excel
+# remove below import to run locally
 from config import CREDENTIALS
 
-'''
-Current bugs:
-/
+# Uncomment and fill in to run
+# CREDENTIALS = {'USERNAME': 'your username', 'PASSWORD': 'your password'}
 
-Improvements to make: 
->Scrape lead name and title
->Check for and remove duplicates
->Take flag for running headless
-'''
+lead_list_link = str(input('Paste lead list link here -> '))
+path = input("\nSave directory (press enter to leave as default: Desktop): ")
 
-lead_list_link = str(input('Past lead list link here -> '))
-# path = input("Save directory (press enter to leave as default): ")
-
+# driver settings, comment out to run visibly
 options = Options()
 options.add_argument('--headless')
 options.add_argument('window-size=1920x1080')
@@ -30,13 +25,13 @@ with ScraperDriver(options=options) as browser:
     list_title, current_page, pages, page_links = browser.get_list_data()
 
     # Scape leads of first page
-    list_of_profile_links = browser.scrape_leads()
+    list_of_profile_links = browser.get_profile_links()
 
     # If multiple pages exist; iterate and scrape
     if pages > 1:
         for page in page_links:
             browser.get(page)
-            current_page_leads = browser.scrape_leads()
+            current_page_leads = browser.get_profile_links()
             for lead in current_page_leads:
                 list_of_profile_links.append(lead)
 
@@ -44,7 +39,7 @@ with ScraperDriver(options=options) as browser:
     if len(list_of_profile_links) > 1:
         print(
             f'\nScrape complete!\n{len(list_of_profile_links)} links added to list')
-        write_to_excel(list_of_profile_links, list_title, path='excelfiles/')
+        write_to_excel(list_of_profile_links, list_title, path.strip())
     else:
         print('\nError! List is empty')
         exit(1)
