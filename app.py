@@ -8,13 +8,13 @@ Current bugs:
 /
 
 Improvements to make: 
->Save Excel doc to specific path
 >Scrape lead name and title
 >Check for and remove duplicates
 >Take flag for running headless
 '''
 
 lead_list_link = str(input('Past lead list link here -> '))
+# path = input("Save directory (press enter to leave as default): ")
 
 options = Options()
 options.add_argument('--headless')
