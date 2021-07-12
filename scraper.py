@@ -1,8 +1,7 @@
 
 from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException, TimeoutException, ElementClickInterceptedException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 
 class ScraperDriver(webdriver.Chrome):
@@ -59,7 +58,7 @@ class ScraperDriver(webdriver.Chrome):
 
     def get_list_data(self):
         '''
-        Finds lead list title, current page number, total number of pages and creates links
+        Finds lead list title, current page number, total number of pages and creates links to each page
 
         :Returns:
         Str: Lead list title
@@ -87,7 +86,7 @@ class ScraperDriver(webdriver.Chrome):
         pages = len(self.find_elements_by_class_name(
             'artdeco-pagination__indicator--number'))
 
-        # Create page links for total pages
+        # Create page links for each page of list
         current_page_link = self.current_url
         page_split = str(current_page_link).split('?')
         page_urls = []
@@ -98,22 +97,24 @@ class ScraperDriver(webdriver.Chrome):
 
         return title, int(current_page_number), pages, page_urls
 
-    def scrape_leads(self):
+    def get_profile_links(self):
         '''
         Finds and adds profile links to list
 
         :Returns:
         list: current_page_links: a list of profile links from page
         '''
-
+        # Wait for lead list to load
         WebDriverWait(self, 10).until(lambda b: b.find_elements_by_class_name(
             'lists-detail__view-profile-name-link'))
         print('\n  Target lead list page loaded!')
 
+        # Collect profile elements
         print('    Scraping lead profile links...')
         profile_links = self.find_elements_by_class_name(
             'lists-detail__view-profile-name-link')
 
+        # Get profile linkss
         current_page_links = [profile_link.get_attribute(
             'href') for profile_link in profile_links]
 

@@ -1,10 +1,21 @@
-This program (app.py) returns an excel document of linkedin profile links from a provided linkedin sales navigator lead list.
+This program returns an excel document of linkedin profile links from a provided linkedin sales navigator lead list link.
 
-It is composed of two parts:
+It is composed of three modules:
 
-1. A selenium (requires Chrome driver) based scraper function (scrape_lead_list(lead_list_name)) which takes as a paremter the lead list name and returns a list of linkedin profile links
+1. app.py: Takes list link and optional path to save file.
 
-2. An OpenPyXl based Excel doc creator (write_to_excel(link_list, lead_list_name)) which takes the parameters a list of links and the lead list name and creates an excel document in the local directory.
+2. scraper.py: A Selenium Chrome driver extension, ScraperDriver (scraper.py). Supplies methods get_lead_list, get_list_data & get_profile_links
 
+3. An xlsxwriter based Excel handler (excel_writer.py). Supplies method write_to_excel
 
-Note: Requires linkedIn sales navigator account credentials and cannot be run if the account requires two-factor authentication. Credentials are supplied in config.py as USERNAME and PASSWORD.
+Current bugs:
+
+> Link has to be copied while on the lead list page in order for multi page support to function properly
+
+Improvements still to make:
+
+> Scrape lead name and title
+> Take flag for running headless
+> Check for and remove duplicates
+
+Note: Requires linkedIn sales navigator account credentials and cannot be run if the account requires two-factor authentication. Provide credentials in dict CREDENTIALS in app.py
