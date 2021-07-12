@@ -2,7 +2,7 @@ from xlsxwriter import Workbook
 import os.path
 
 
-def write_to_excel(link_list, list_title, path='Desktop'):
+def write_to_excel(link_list, list_title, path=''):
     '''
     Takes a list of links and writes them to an excel document called list_title
 
@@ -13,7 +13,7 @@ def write_to_excel(link_list, list_title, path='Desktop'):
     '''
     print('\n    Writing list to excel...')
 
-    if path == 'Desktop':
+    if path == '':
         path = os.path.expanduser('~/Desktop')
     elif not os.path.isdir(path):
         print(f'Error: Unable to locate path: {path}')
