@@ -1,6 +1,6 @@
 from selenium.webdriver.chrome.options import Options
 from scraper import ScraperDriver
-from xlsx_writer import write_to_excel
+from excel_writer import write_to_excel
 from config import CREDENTIALS
 
 '''
@@ -44,7 +44,7 @@ with ScraperDriver(options=options) as browser:
     if len(list_of_profile_links) > 1:
         print(
             f'\nScrape complete!\n{len(list_of_profile_links)} links added to list')
-        write_to_excel(list_of_profile_links, list_title,)
+        write_to_excel(list_of_profile_links, list_title, path='excelfiles/')
     else:
         print('\nError! List is empty')
         exit(1)

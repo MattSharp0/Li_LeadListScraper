@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 selenium = "*"
-openpyxl = "*"
+xlsxwriter = "*"
 
 [dev-packages]
 autopep8 = "*"
