@@ -40,11 +40,12 @@ with ScraperDriver(options=options) as browser:
     list_of_lead_links = browser.scrape_leads()
 
     # Iterate through pages, scrape leads and append to list
-    for page in page_links:
-        browser.get(page)
-        current_page_leads = browser.scrape_leads()
-        for lead in current_page_leads:
-            list_of_lead_links.append(lead)
+    if pages > 1:
+        for page in page_links:
+            browser.get(page)
+            current_page_leads = browser.scrape_leads()
+            for lead in current_page_leads:
+                list_of_lead_links.append(lead)
 
     # check list validity and exit
     if len(list_of_lead_links) > 1:
