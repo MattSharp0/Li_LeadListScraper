@@ -22,11 +22,7 @@ Improvements to make:
 >Take flag for running headless
 '''
 
-# lead_list_name = str(input('Type lead list name: '))
-
-# test lists:
-lead_list_name = 'Vanguard [mh]'
-# lead_list_name = 'CaptialOne [mh]'
+lead_list_name = str(input('Type lead list name: '))
 
 options = Options()
 options.add_argument('--headless')
