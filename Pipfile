@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 selenium = "*"
 xlsxwriter = "*"
+typer = "*"
 
 [dev-packages]
 autopep8 = "*"

@@ -6,7 +6,7 @@ from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 class ScraperDriver(webdriver.Chrome):
     '''
-    Extends webdriver class with leadlist specifc methods
+    Extends webdriver class with specifc methods for navigating linkedin sales navigator
     '''
 
     def get_lead_list(self, credentials, lead_list_link):
