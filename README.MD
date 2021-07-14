@@ -1,21 +1,15 @@
+# Li(LinkedIn) Lead List Scraper
+
 This program returns an excel document of linkedin profile links from a provided linkedin sales navigator lead list link.
 
-It is composed of three modules:
+#### Current bugs:
 
-1. app.py: Takes list link and optional path to save file.
+- Link has to be copied while on the lead list page in order for multi page support to function properly
 
-2. scraper.py: A Selenium Chrome driver extension, ScraperDriver (scraper.py). Supplies methods get_lead_list, get_list_data & get_profile_links
+#### Improvements to make:
 
-3. An xlsxwriter based Excel handler (excel_writer.py). Supplies method write_to_excel
+- Include lead name and title when scraping
+- Include web driver install/setup instructions
+- Improve readme formatting & documentation
 
-Current bugs:
-
-> Link has to be copied while on the lead list page in order for multi page support to function properly
-
-Improvements still to make:
-
-> Scrape lead name and title
-> Take flag for running headless
-> Check for and remove duplicates
-
-Note: Requires linkedIn sales navigator account credentials and cannot be run if the account requires two-factor authentication. Provide credentials in dict CREDENTIALS in app.py
+**_Note:_** Requires linkedIn sales navigator account credentials and cannot be run if the account requires two-factor authentication. Provide credentials in dict CREDENTIALS in app.py
