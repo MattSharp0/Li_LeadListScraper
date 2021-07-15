@@ -1,6 +1,6 @@
 from selenium.webdriver.chrome.options import Options
-from scraper import ScraperDriver
-from excel_writer import write_to_excel
+from src.scraper import ScraperDriver
+from src.excel_writer import write_to_excel
 import typer
 # Remove below to run locally
 from config import CREDENTIALS
