@@ -4,3 +4,5 @@ testbed.py
 launch.json
 excelfiles/
 *.xlsx
+notes.md
+tests/

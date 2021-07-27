@@ -1,58 +1,51 @@
-from selenium.webdriver.chrome.options import Options
-from src.scraper import ScraperDriver
+from posixpath import split
+from src.wsdriver import WebScraperDriver, options
 from src.excel_writer import write_to_excel
 import typer
 # Remove below to run locally
 from config import CREDENTIALS
 
 
-def main(lead_list_link: str, save_path: str = '', headless: bool = True):
+def main(lead_list_links: str, save_path: str = ''):
     '''
-    Scrape lead list from a link and returns an excel documment. 
-    Requires lead link (str)
-    Optionally specify path (str) to save file and flag to run not headless (bool)
+    Scrape lead list from provided link(s) and returns an excel documment. 
+    Requires lead link (str) (seperate multiple with ',')
+    Optionally specify directory path to save file (defaults to desktop)
     '''
+
+    lead_lists = lead_list_links.split(',')
+    total_lists = len(lead_lists)
+
+    start = input(
+        f'- Provided {total_lists} list link(s)\n- Begin scrape? Y/n ')
 
     # Supply credentials below:
     # CREDENTIALS = {'USERNAME' : 'your_username', 'PASSWORD': 'your_password'}
 
-    # driver settings
-    options = Options()
-    if headless:
-        options.add_argument('--headless')
-        options.add_argument('window-size=1920x1080')
+    # create Scraper Driver object
+    if start.lower() == 'y':
+        with WebScraperDriver(options=options) as driver:
 
-    # create driver object
-    with ScraperDriver(options=options) as browser:
+            # Sign in with provided credentials
+            driver.sign_in(credentials=CREDENTIALS)
 
-        # Load sales nav, sign in and go to list
-        browser.get_lead_list(CREDENTIALS, lead_list_link.strip())
+            for lead_list in lead_lists:
+                lead_list_formated = (lead_list.strip()).split(
+                    '?')[0] + '?sortCriteria=NAME&sortOrder=ASCENDING'
+                # Go to list and scrape leads
+                title, list_of_profile_links = driver.scrape_lead_list(
+                    lead_list_link=lead_list_formated)
 
-        # Get list title, pages and create page links
-        list_title, current_page, pages, page_links = browser.get_list_data()
+                # Write leads to excel document
+                write_to_excel(link_list=list_of_profile_links,
+                               list_title=title, path=save_path)
 
-        # Scape leads of first page
-        list_of_profile_links = browser.get_profile_links()
+    else:
+        print('- Canceling scrape')
 
-        # If multiple pages exist; load and scrape
-        if pages > 1:
-            for page in page_links:
-                browser.get(page)
-                current_page_leads = browser.get_profile_links()
-                for lead in current_page_leads:
-                    list_of_profile_links.append(lead)
-
-        # check list validity and exit
-        if len(list_of_profile_links) > 1:
-            print(
-                f'\nScrape complete!\n{len(list_of_profile_links)} links added to list')
-            write_to_excel(list_of_profile_links,
-                           list_title, save_path.strip())
-        else:
-            print('\nError! List is empty')
-            exit(1)
+    print(f'\n- Completed scrape; saved {total_lists} lists\n')
 
 
-# Run using Typer for CLI args/options
+#  Run using Typer for CLI args/options
 if __name__ == "__main__":
     typer.run(main)

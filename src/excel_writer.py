@@ -11,14 +11,16 @@ def write_to_excel(link_list, list_title, path=''):
     Str: lead_list_name: name of lead list
     Str: path; defaults to Desktop directory
     '''
-    print('\n    Writing list to excel...')
+    print('\n- Writing list to excel...')
 
     if path == '':
         path = os.path.expanduser('~/Desktop')
     elif not os.path.isdir(path):
-        print(f'Error: Unable to locate path: {path}')
+        print(
+            f'\n- Error: Unable to locate path: {path}, defaulting to Desktop')
         path = os.path.expanduser('~/Desktop')
 
+    list_title = list_title.replace('/', '')
     title = ((list_title.split()[0]) + ' leads')
     file_location = os.path.join(path, title + '.xlsx')
 
@@ -32,4 +34,4 @@ def write_to_excel(link_list, list_title, path=''):
         row += 1
 
     wb.close()
-    print(f'\nSaved {len(link_list)} lead links to {file_location}')
+    print(f'\nSucces: saved {len(link_list)} lead links to {file_location}')
