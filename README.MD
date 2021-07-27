@@ -2,9 +2,9 @@
 
 This program returns an excel document of linkedin profile links from a provided linkedin sales navigator lead list link.
 
-#### Current bugs:
+run python app.py --help to learn more
 
-- Link has to be copied while on the lead list page in order for multi page support to function properly
+#### Current bugs:
 
 #### Improvements to make:
 
