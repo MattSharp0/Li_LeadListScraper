@@ -2,6 +2,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import WebDriverException
+import itertools
 
 options = Options()
 options.add_argument('--headless')
@@ -110,6 +111,56 @@ class WebScraperDriver(webdriver.Chrome):
         print(f'\n- Saved {len(profile_links)} links from page to list!')
         return current_page_links
 
+    def get_lead_data(self):
+        WebDriverWait(self, 10).until(lambda b: b.find_elements_by_class_name(
+            'lists-detail__view-profile-name-link'))
+        print('\n- Target lead list page loaded!')
+
+        print('- Scraping lead profile data....')
+        leads = self.find_elements_by_class_name(
+            'lists-detail__view-profile-name-link')
+        print(f'Lead elements found: {len(leads)}')
+
+        lead_title_elements = self.find_elements_by_xpath(
+            '//*[@class="horizontal-person-entity-lockup-4"]/div[2]/div[2]/span/div')
+        print(f'Title elements found: {len(lead_title_elements)}')
+
+        lead_account_elements = self.find_elements_by_class_name(
+            'artdeco-entity-lockup__title--alt-link')
+        print(f'Account elements found: {len(lead_account_elements)}')
+
+        table = self.find_element_by_tag_name('tbody')
+
+        lead_location_elements = table.find_elements_by_class_name(
+            'list-people-detail-header__geography')
+        print(f'Location elements found: {len(lead_location_elements)}')
+
+        lead_names = [lead_name.text for lead_name in leads]
+
+        lead_profile_links = [profile_link.get_attribute(
+            'href') for profile_link in leads]
+
+        lead_titles = [lead_title.text for lead_title in lead_title_elements]
+
+        lead_accounts = [
+            lead_account.text for lead_account in lead_account_elements]
+
+        lead_locations = [
+            lead_location.text for lead_location in lead_location_elements]
+
+        if len(leads) != len(lead_titles) or len(leads) != len(lead_accounts) or len(leads) != len(lead_locations):
+            print('\n-Discrepency between lead fields, saving only lead names and links')
+            blank = []
+            for x in range(0, (len(lead_names)+1)):
+                blank.append('N/A')
+
+            lead_data = list(zip(lead_names, blank, blank,
+                             blank, lead_profile_links))
+        else:
+            lead_data = list(zip(lead_names, lead_titles,
+                             lead_accounts, lead_locations, lead_profile_links))
+        return lead_data
+
     def scrape_lead_list(self, lead_list_link):
         '''
         Scrapes data from lead list
@@ -128,14 +179,20 @@ class WebScraperDriver(webdriver.Chrome):
         title, pages, page_links = self.get_list_data()
 
         # Scape leads of first page
-        list_of_profile_links = self.get_profile_links()
+        # list_of_profile_links = self.get_profile_links()
+
+        lead_data = self.get_lead_data()
 
         # If multiple pages exist; load and scrape
         if pages > 1:
             for page in page_links:
                 self.get(page)
-                current_page_leads = self.get_profile_links()
-                for lead in current_page_leads:
-                    list_of_profile_links.append(lead)
+                page_lead_data = self.get_lead_data()
+                for lead in page_lead_data:
+                    lead_data.append(lead)
 
-        return title, list_of_profile_links
+                # current_page_leads = self.get_profile_links()
+                # for lead in current_page_leads:
+                #     list_of_profile_links.append(lead)
+
+        return title, lead_data

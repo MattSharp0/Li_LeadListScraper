@@ -5,13 +5,17 @@ import typer
 # Remove below to run locally
 from config import CREDENTIALS
 
+# lead_list_links: str,
 
-def main(lead_list_links: str, save_path: str = ''):
+
+def main(save_path: str = ''):
     '''
     Scrape lead list from provided link(s) and returns an excel documment. 
     Requires lead link (str) (seperate multiple with ',')
     Optionally specify directory path to save file (defaults to desktop)
     '''
+
+    lead_list_links = input('Paste lead lists seperated by comma: ')
 
     lead_lists = lead_list_links.split(',')
     total_lists = len(lead_lists)
@@ -33,11 +37,11 @@ def main(lead_list_links: str, save_path: str = ''):
                 lead_list_formated = (lead_list.strip()).split(
                     '?')[0] + '?sortCriteria=NAME&sortOrder=ASCENDING'
                 # Go to list and scrape leads
-                title, list_of_profile_links = driver.scrape_lead_list(
+                title, lead_data = driver.scrape_lead_list(
                     lead_list_link=lead_list_formated)
 
                 # Write leads to excel document
-                write_to_excel(link_list=list_of_profile_links,
+                write_to_excel(data_list=lead_data,
                                list_title=title, path=save_path)
 
     else:
