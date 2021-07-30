@@ -1,3 +1,4 @@
+from os import mkdir
 from xlsxwriter import Workbook
 import os.path
 
@@ -14,11 +15,14 @@ def write_to_excel(data_list, list_title, path=''):
     print('\n- Writing list to excel...')
 
     if path == '':
-        path = os.path.expanduser('~/Desktop')
+        path = os.path.expanduser('~/Desktop/leads')
+        if not os.path.isdir(path):
+            mkdir(path)
     elif not os.path.isdir(path):
         print(
             f'\n- Error: Unable to locate path: {path}, defaulting to Desktop')
-        path = os.path.expanduser('~/Desktop')
+        path = os.path.expanduser('~/Desktop/')
+        mkdir(path)
 
     BAD_CHARS = '!@#$%^&*(){}[]-+=\\|/.,><~`\'\":; '
 

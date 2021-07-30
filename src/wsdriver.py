@@ -148,17 +148,27 @@ class WebScraperDriver(webdriver.Chrome):
         lead_locations = [
             lead_location.text for lead_location in lead_location_elements]
 
-        if len(leads) != len(lead_titles) or len(leads) != len(lead_accounts) or len(leads) != len(lead_locations):
-            print('\n-Discrepency between lead fields, saving only lead names and links')
-            blank = []
-            for x in range(0, (len(lead_names)+1)):
-                blank.append('N/A')
+        blank = []
+        for x in range(0, (len(lead_names)+1)):
+            blank.append('N/A')
 
-            lead_data = list(zip(lead_names, blank, blank,
-                             blank, lead_profile_links))
-        else:
-            lead_data = list(zip(lead_names, lead_titles,
-                             lead_accounts, lead_locations, lead_profile_links))
+        if len(leads) != len(lead_titles):
+            print('\n-Discrepency between lead fields & titles')
+
+            lead_titles = blank
+
+        if len(leads) != len(lead_accounts):
+            print('\n-Discrepency between lead fields & accounts')
+
+            lead_accounts = blank
+
+        if len(leads) != len(lead_locations):
+            print('\n-Discrepency between lead fields & locations')
+
+            lead_locations = blank
+
+        lead_data = list(zip(lead_names, lead_titles,
+                         lead_accounts, lead_locations, lead_profile_links))
         return lead_data
 
     def scrape_lead_list(self, lead_list_link):
