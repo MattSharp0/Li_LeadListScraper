@@ -24,9 +24,9 @@ def write_to_excel(data_list, list_title, path=''):
         path = os.path.expanduser('~/Desktop/')
         mkdir(path)
 
-    BAD_CHARS = '!@#$%^&*(){}[]-+=\\|/.,><~`\'\":; '
+    BAD_CHARS = '!@#$%^&*{}[]+=\\|/.,><~`\'\":;'
 
-    file_name = list_title.title()
+    file_name = (list_title.split('[')[0]).strip()
 
     for char in BAD_CHARS:
         file_name = (file_name.title()).replace(char, '')
