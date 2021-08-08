@@ -28,11 +28,9 @@ class WebScraperDriver(webdriver.Chrome):
 
         # load sales navigator
         self.get('https://www.linkedin.com/sales')
-        print('\n- Chrome driver object created')
 
         WebDriverWait(self, 10).until(
             lambda b: b.find_element_by_id('username'))
-        print('- Loaded sign in page')
         # Sign in
         username_box = self.find_element_by_id('username')
         username_box.send_keys(username)
@@ -42,15 +40,13 @@ class WebScraperDriver(webdriver.Chrome):
         signin_button = self.find_element_by_xpath(
             '//*[@id="app__container"]/main/div[2]/form/div[3]/button')
         signin_button.click()
-        print('- Signing in...')
         try:
             # Wait for homepage to load, then go to Lead lists
             WebDriverWait(self, 10).until(
                 lambda b: b.find_element_by_id('ember9'))
-            print('\n- Homepage loaded!')
 
         except WebDriverException:
-            print('\n- Homepage failed to load')
+            print('\n- Error: Homepage failed to load')
 
     def get_list_data(self):
         '''
@@ -114,26 +110,24 @@ class WebScraperDriver(webdriver.Chrome):
     def get_lead_data(self):
         WebDriverWait(self, 10).until(lambda b: b.find_elements_by_class_name(
             'lists-detail__view-profile-name-link'))
-        print('\n- Target lead list page loaded!')
 
-        print('- Scraping lead profile data....')
         leads = self.find_elements_by_class_name(
             'lists-detail__view-profile-name-link')
-        print(f'Lead elements found: {len(leads)}')
+        # print(f'- Lead elements found: {len(leads)}')
 
         lead_title_elements = self.find_elements_by_xpath(
             '//*[@class="horizontal-person-entity-lockup-4"]/div[2]/div[2]/span/div')
-        print(f'Title elements found: {len(lead_title_elements)}')
+        # print(f'- Title elements found: {len(lead_title_elements)}')
 
         lead_account_elements = self.find_elements_by_class_name(
             'artdeco-entity-lockup__title--alt-link')
-        print(f'Account elements found: {len(lead_account_elements)}')
+        # print(f'- Account elements found: {len(lead_account_elements)}')
 
         table = self.find_element_by_tag_name('tbody')
 
         lead_location_elements = table.find_elements_by_class_name(
             'list-people-detail-header__geography')
-        print(f'Location elements found: {len(lead_location_elements)}')
+        # print(f'- Location elements found: {len(lead_location_elements)}')
 
         lead_names = [lead_name.text for lead_name in leads]
 
@@ -149,27 +143,27 @@ class WebScraperDriver(webdriver.Chrome):
             lead_location.text for lead_location in lead_location_elements]
 
         blank = []
-        for x in range(0, (len(lead_names)+1)):
+        for _ in range(0, (len(lead_names)+1)):
             blank.append('N/A')
 
         if len(leads) != len(lead_titles):
-            print('\n-Discrepency between lead fields & titles')
+            print('\n- Error: Discrepency between lead fields & titles')
 
             lead_titles = blank
 
         if len(leads) != len(lead_accounts):
-            print('\n-Discrepency between lead fields & accounts')
+            print('\n- Error: Discrepency between lead fields & accounts')
 
             lead_accounts = blank
 
         if len(leads) != len(lead_locations):
-            print('\n-Discrepency between lead fields & locations')
+            print('\n- Error: Discrepency between lead fields & locations')
 
             lead_locations = blank
 
         lead_data = list(zip(lead_names, lead_titles,
                          lead_accounts, lead_locations, lead_profile_links))
-        return lead_data
+        return lead_data, len(leads)
 
     def scrape_lead_list(self, lead_list_link):
         '''
@@ -184,25 +178,19 @@ class WebScraperDriver(webdriver.Chrome):
         '''
 
         self.get(lead_list_link)
-        print('- Loading lead list...')
 
         title, pages, page_links = self.get_list_data()
 
         # Scape leads of first page
-        # list_of_profile_links = self.get_profile_links()
-
-        lead_data = self.get_lead_data()
+        lead_data, total_leads = self.get_lead_data()
 
         # If multiple pages exist; load and scrape
         if pages > 1:
             for page in page_links:
                 self.get(page)
-                page_lead_data = self.get_lead_data()
+                page_lead_data, leads_on_page = self.get_lead_data()
+                total_leads += leads_on_page
                 for lead in page_lead_data:
                     lead_data.append(lead)
 
-                # current_page_leads = self.get_profile_links()
-                # for lead in current_page_leads:
-                #     list_of_profile_links.append(lead)
-
-        return title, lead_data
+        return title, lead_data, total_leads

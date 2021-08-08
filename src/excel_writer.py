@@ -12,7 +12,7 @@ def write_to_excel(data_list, list_title, path=''):
     Str: lead_list_name: name of lead list
     Str: path; defaults to Desktop directory
     '''
-    print('\n- Writing list to excel...')
+    # print('\n- Writing list to excel...')
 
     if path == '':
         path = os.path.expanduser('~/Desktop/leads')
@@ -31,8 +31,6 @@ def write_to_excel(data_list, list_title, path=''):
     for char in BAD_CHARS:
         file_name = (file_name.title()).replace(char, '')
 
-    # file_name = file_name.replace('/', '')
-    # name = ((file_name.split()[0]) + ' leads')
     file_location = os.path.join(path, file_name + '_leads.xlsx')
 
     wb = Workbook(f'{file_location}')
@@ -54,4 +52,4 @@ def write_to_excel(data_list, list_title, path=''):
         row += 1
 
     wb.close()
-    print(f'\nSucces: saved {len(data_list)} lead links to {file_location}')
+    # print(f'\nSucces: saved {len(data_list)} lead links to {file_location}')
