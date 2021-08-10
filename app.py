@@ -19,14 +19,14 @@ def main(save_path: str = ''):
     lead_lists = lead_list_links.split(',')
     total_lists = len(lead_lists)
 
-    start = typer.prompt(
-        f'\n- Provided {total_lists} list link(s)\n- Begin scrape? [Y/n]')
+    start = typer.confirm(
+        f'\n- Provided {total_lists} list link(s)\n- Begin scrape?', abort=True)
 
     # Supply credentials below:
     # CREDENTIALS = {'USERNAME' : 'your_username', 'PASSWORD': 'your_password'}
 
     # create Scraper Driver object
-    if start.lower() == 'y':
+    if start:
         with WebScraperDriver(options=options) as driver:
             typer.secho('\n- Created chromedriver object')
             # Sign in with provided credentials
@@ -35,7 +35,7 @@ def main(save_path: str = ''):
 
             total_leads = 0
             typer.secho('\n- Scraping lists...')
-            with typer.progressbar(lead_lists) as progress:
+            with typer.progressbar(lead_lists, label='Scraping lists') as progress:
                 for lead_list in progress:
                     lead_list_formated = (lead_list.strip()).split(
                         '?')[0] + '?sortCriteria=NAME&sortOrder=ASCENDING'
