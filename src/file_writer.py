@@ -5,7 +5,7 @@ import csv
 
 def write_to_csv(data_list, file_name, path=''):
     '''
-    Takes a list of links and writes them to a CSV file
+    Takes a list of links and writes them to a CSV file. Formatted for upload to Zoominfo Enhance
 
     :Params:
     List: link_list: list of strings
@@ -16,6 +16,8 @@ def write_to_csv(data_list, file_name, path=''):
 
     with open(file_location, mode='w', newline='') as f:
         writer = csv.writer(f)
+        writer.writerow(['Name', 'Title', 'Account',
+                        'Location', 'Link', 'Email', 'Phone'])
         writer.writerows(data_list)
 
 
