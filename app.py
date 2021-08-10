@@ -1,16 +1,18 @@
-from os import path
+from os import mkdir, path
+import os
 from posixpath import split
 from src.wsdriver import WebScraperDriver, options
-from src.excel_writer import write_to_excel
+from src.file_writer import write_to_excel, write_to_csv
 import typer
 # Remove below to run locally
 from config import CREDENTIALS
 
 
-def main(save_path: str = ''):
+def main(as_xlsx: bool = True, as_csv: bool = False, save_path: str = ''):
     '''
-    Scrape lead list from provided link(s) and returns an excel documment. 
-    Requires lead link (str) (seperate multiple with ',')
+    Scrape lead list from provided link(s) and returns an Excel doc and / or a CSV file. 
+    Optionally specify whether to save as .xlsx file, default is True
+    Optionally specify whether to save as .CSV file, default is False
     Optionally specify directory path to save file (defaults to desktop)
     '''
 
@@ -29,25 +31,54 @@ def main(save_path: str = ''):
     if start:
         with WebScraperDriver(options=options) as driver:
             typer.secho('\n- Created chromedriver object')
+
             # Sign in with provided credentials
             driver.sign_in(credentials=CREDENTIALS)
             typer.secho('\n- Signed into LinkedIn Sales Nav')
 
             total_leads = 0
             typer.secho('\n- Scraping lists...')
+
+            # Iterate through lists, scape and save
             with typer.progressbar(lead_lists, label='Scraping lists') as progress:
                 for lead_list in progress:
                     lead_list_formated = (lead_list.strip()).split(
                         '?')[0] + '?sortCriteria=NAME&sortOrder=ASCENDING'
+
                     # Go to list and scrape leads
-                    title, lead_data, list_leads = driver.scrape_lead_list(
+                    list_title, lead_data, number_of_leads = driver.scrape_lead_list(
                         lead_list_link=lead_list_formated)
-                    total_leads += list_leads
-                    # Write leads to excel document
-                    write_to_excel(data_list=lead_data,
-                                   list_title=title, path=save_path)
+
+                    total_leads += number_of_leads
+
+                    # Correct file path & name
+                    if save_path == '':
+                        path = os.path.expanduser('~/Desktop/leads')
+                        if not os.path.isdir(path):
+                            mkdir(path)
+                    elif not os.path.isdir(save_path):
+                        typer.secho(
+                            f'\n- Error: Unable to locate path: {save_path}, defaulting to Desktop')
+                        path = os.path.expanduser('~/Desktop/')
+
+                    BAD_CHARS = '!@#$%^&*{}[]+=\\|/.,><~`\'\":;'
+
+                    file_name = (list_title.split('[')[0]).strip()
+
+                    for char in BAD_CHARS:
+                        file_name = (file_name.title()).replace(char, '')
+
+                    if as_xlsx:
+                        # Write leads to excel document
+                        write_to_excel(data_list=lead_data,
+                                       file_name=file_name, path=path)
+                    if as_csv:
+                        # Write leads to CSV
+                        write_to_csv(data_list=lead_data,
+                                     file_name=file_name, path=path)
+
                     typer.secho(
-                        f'\n- Saved {list_leads} leads from {title}')
+                        f'\n- Saved {number_of_leads} leads from {list_title}')
 
     else:
         typer.secho('- Canceling scrape')
