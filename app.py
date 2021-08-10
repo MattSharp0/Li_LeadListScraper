@@ -8,12 +8,11 @@ import typer
 from config import CREDENTIALS
 
 
-def main(as_xlsx: bool = True, as_csv: bool = False, save_path: str = ''):
+def main(as_xlsx: bool = True, as_csv: bool = False):
     '''
     Scrape lead list from provided link(s) and returns an Excel doc and / or a CSV file. 
-    Optionally specify whether to save as .xlsx file, default is True
-    Optionally specify whether to save as .CSV file, default is False
-    Optionally specify directory path to save file (defaults to desktop)
+    Optionally specify whether to save as .xlsx file, default is True. 
+    Optionally specify whether to save as .CSV file, default is False.
     '''
 
     lead_list_links = typer.prompt('\n- Paste lead lists seperated by comma')
@@ -26,6 +25,13 @@ def main(as_xlsx: bool = True, as_csv: bool = False, save_path: str = ''):
 
     # Supply credentials below:
     # CREDENTIALS = {'USERNAME' : 'your_username', 'PASSWORD': 'your_password'}
+
+    # set save path
+    path = os.path.expanduser('~/Desktop/leads')
+    if not os.path.isdir(path):
+        mkdir(path)
+
+    BAD_CHARS = '!@#$%^&*{}[]+=\\|/.,><~`\'\":;'
 
     # create Scraper Driver object
     if start:
@@ -50,18 +56,6 @@ def main(as_xlsx: bool = True, as_csv: bool = False, save_path: str = ''):
                         lead_list_link=lead_list_formated)
 
                     total_leads += number_of_leads
-
-                    # Correct file path & name
-                    if save_path == '':
-                        path = os.path.expanduser('~/Desktop/leads')
-                        if not os.path.isdir(path):
-                            mkdir(path)
-                    elif not os.path.isdir(save_path):
-                        typer.secho(
-                            f'\n- Error: Unable to locate path: {save_path}, defaulting to Desktop')
-                        path = os.path.expanduser('~/Desktop/')
-
-                    BAD_CHARS = '!@#$%^&*{}[]+=\\|/.,><~`\'\":;'
 
                     file_name = (list_title.split('[')[0]).strip()
 
