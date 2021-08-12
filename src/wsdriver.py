@@ -135,21 +135,21 @@ class WebScraperDriver(webdriver.Chrome):
                     './td[1]/div/div[2]/div[2]/span/div')
                 title = lead_title_element.text
             except NoSuchElementException:
-                title = 'N/A'
+                title = ''
 
             try:
                 lead_account_element = row.find_element_by_class_name(
                     'artdeco-entity-lockup__title--alt-link')
                 account = lead_account_element.text
             except NoSuchElementException:
-                account = 'N/A'
+                account = ''
 
             try:
                 lead_location_element = row.find_element_by_class_name(
                     'list-people-detail-header__geography')
                 location = lead_location_element.text
             except NoSuchElementException:
-                location = 'N/A'
+                location = ''
 
             lead_data.append([name, title, account, location, profile_link])
 
