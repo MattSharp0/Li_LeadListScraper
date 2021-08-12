@@ -2,7 +2,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import WebDriverException
-import itertools
 
 options = Options()
 options.add_argument('--headless')
