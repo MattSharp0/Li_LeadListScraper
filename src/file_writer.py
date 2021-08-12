@@ -14,26 +14,11 @@ def write_to_csv(data_list, file_name, path=''):
     '''
     file_location = os.path.join(path, file_name + '_leads.csv')
 
-    csv_data_list = []
-    for lead in data_list:
-        full_name = lead.pop(0)
-        name = (full_name.split(',')[0]).split()
-        last_name = name[-1]
-        if len(name) > 2:
-            first_name = name[0]
-            first_name = ([(first_name := first_name + ' ' + middle_names)
-                           for middle_names in name[1:(len(name)-1)]])[-1]
-        else:
-            first_name = name[0]
-        lead.insert(0, last_name)
-        lead.insert(0, first_name)
-        csv_data_list.append(lead)
-
     with open(file_location, mode='w', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(['First Name', 'Last Name', 'Title', 'Account',
                         'Location', 'Link', 'Email', 'Phone'])
-        writer.writerows(csv_data_list)
+        writer.writerows(data_list)
 
 
 def write_to_excel(data_list, file_name, path=''):
@@ -53,12 +38,8 @@ def write_to_excel(data_list, file_name, path=''):
         full_name = lead.pop(0)
         name = (full_name.split(',')[0]).split()
         last_name = name[-1]
-        if len(name) > 2:
-            first_name = name[0]
-            first_name = ([(first_name := first_name + ' ' + middle_names)
-                           for middle_names in name[1:(len(name)-1)]])[-1]
-        else:
-            first_name = name[0]
+        first_names = name[0:(len(name)-1)]
+        first_name = ' '.join(first_names)
         lead.insert(0, last_name)
         lead.insert(0, first_name)
         xlsx_data_list.append(lead)
