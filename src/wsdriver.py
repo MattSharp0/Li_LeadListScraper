@@ -1,7 +1,8 @@
+from os import link
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import NoSuchElementException, WebDriverException
 
 options = Options()
 options.add_argument('--headless')
@@ -107,62 +108,52 @@ class WebScraperDriver(webdriver.Chrome):
         return current_page_links
 
     def get_lead_data(self):
+        '''
+        Scrapes lead data (Name, title, account, location, profile link) from page
+
+        :returns: 
+        list: list of lead data lists
+        int: total leads found
+        '''
         WebDriverWait(self, 10).until(lambda b: b.find_elements_by_class_name(
             'lists-detail__view-profile-name-link'))
 
-        leads = self.find_elements_by_class_name(
-            'lists-detail__view-profile-name-link')
-        # print(f'- Lead elements found: {len(leads)}')
-
-        lead_title_elements = self.find_elements_by_xpath(
-            '//*[@class="horizontal-person-entity-lockup-4"]/div[2]/div[2]/span/div')
-        # print(f'- Title elements found: {len(lead_title_elements)}')
-
-        lead_account_elements = self.find_elements_by_class_name(
-            'artdeco-entity-lockup__title--alt-link')
-        # print(f'- Account elements found: {len(lead_account_elements)}')
+        lead_data = []
 
         table = self.find_element_by_tag_name('tbody')
+        table_rows = table.find_elements_by_tag_name('tr')
 
-        lead_location_elements = table.find_elements_by_class_name(
-            'list-people-detail-header__geography')
-        # print(f'- Location elements found: {len(lead_location_elements)}')
+        for row in table_rows:
+            lead = row.find_element_by_class_name(
+                'lists-detail__view-profile-name-link')
+            name = lead.text
 
-        lead_names = [lead_name.text for lead_name in leads]
+            profile_link = lead.get_attribute('href')
 
-        lead_profile_links = [profile_link.get_attribute(
-            'href') for profile_link in leads]
+            try:
+                lead_title_element = row.find_element_by_xpath(
+                    './td[1]/div/div[2]/div[2]/span/div')
+                title = lead_title_element.text
+            except NoSuchElementException:
+                title = 'N/A'
 
-        lead_titles = [lead_title.text for lead_title in lead_title_elements]
+            try:
+                lead_account_element = row.find_element_by_class_name(
+                    'artdeco-entity-lockup__title--alt-link')
+                account = lead_account_element.text
+            except NoSuchElementException:
+                account = 'N/A'
 
-        lead_accounts = [
-            lead_account.text for lead_account in lead_account_elements]
+            try:
+                lead_location_element = row.find_element_by_class_name(
+                    'list-people-detail-header__geography')
+                location = lead_location_element.text
+            except NoSuchElementException:
+                location = 'N/A'
 
-        lead_locations = [
-            lead_location.text for lead_location in lead_location_elements]
+            lead_data.append([name, title, account, location, profile_link])
 
-        blank = []
-        for _ in range(0, (len(lead_names)+1)):
-            blank.append('N/A')
-
-        if len(leads) != len(lead_titles):
-            print('\n- Error: Discrepency between lead fields & titles')
-
-            lead_titles = blank
-
-        if len(leads) != len(lead_accounts):
-            print('\n- Error: Discrepency between lead fields & accounts')
-
-            lead_accounts = blank
-
-        if len(leads) != len(lead_locations):
-            print('\n- Error: Discrepency between lead fields & locations')
-
-            lead_locations = blank
-
-        lead_data = list(zip(lead_names, lead_titles,
-                         lead_accounts, lead_locations, lead_profile_links))
-        return lead_data, len(leads)
+        return lead_data, len(table_rows)
 
     def scrape_lead_list(self, lead_list_link):
         '''
