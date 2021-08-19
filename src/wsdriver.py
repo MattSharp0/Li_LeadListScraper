@@ -126,7 +126,7 @@ class WebScraperDriver(webdriver.Chrome):
         for row in table_rows:
             lead = row.find_element_by_class_name(
                 'lists-detail__view-profile-name-link')
-            name = lead.text
+            name = (lead.text).title()
 
             profile_link = lead.get_attribute('href')
 

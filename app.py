@@ -60,7 +60,7 @@ def main(as_xlsx: bool = True, as_csv: bool = False):
                     file_name = (list_title.split('[')[0]).strip()
 
                     for char in BAD_CHARS:
-                        file_name = (file_name.title()).replace(char, '')
+                        file_name = file_name.replace(char, '')
 
                     if as_xlsx:
                         # Write leads to excel document
