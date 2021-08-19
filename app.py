@@ -1,4 +1,4 @@
-from os import mkdir, path
+
 import os
 import json
 from src.wsdriver import WebScraperDriver, options
@@ -29,7 +29,7 @@ def main(as_xlsx: bool = True, as_csv: bool = False):
     # set save path
     path = os.path.expanduser('~/Desktop/leads')
     if not os.path.isdir(path):
-        mkdir(path)
+        os.mkdir(path)
 
     BAD_CHARS = '!@#$%^&*{}[]+=\\|/.,><~`\'\":;'
 
@@ -57,8 +57,10 @@ def main(as_xlsx: bool = True, as_csv: bool = False):
 
                     total_leads += number_of_leads
 
+                    # Format file name (note - the author uses '[]' in the linkedin list title for notes, these are removed below)
                     file_name = (list_title.split('[')[0]).strip()
 
+                    # Remove error causing characters
                     for char in BAD_CHARS:
                         file_name = file_name.replace(char, '')
 
@@ -80,14 +82,21 @@ def main(as_xlsx: bool = True, as_csv: bool = False):
     typer.secho(
         f'\n- Completed scrape \n- Saved {total_leads} leads from {total_lists} lists')
 
-    with open('data.json',) as f:
-        previous_data = json.load(f)
-    print(previous_data)
+    # records a running total number of all lists and leads scraped
+    try:
+        with open('data.json',) as f:
+            previous_data = json.load(f)
+        print(previous_data)
 
-    program_data = {
-        'Lists scraped': (previous_data[0]['Lists scraped'] + total_lists),
-        'Leads scraped': (previous_data[0]['Leads scraped'] + total_leads)
-    }
+        program_data = {
+            'Lists scraped': (previous_data[0]['Lists scraped'] + total_lists),
+            'Leads scraped': (previous_data[0]['Leads scraped'] + total_leads)
+        }
+    except OSError:
+        program_data = {
+            'Lists scraped': total_lists,
+            'Leads scraped': total_leads
+        }
 
     with open('data.json', 'w') as f:
         json_string = json.dumps(program_data, indent=4)
