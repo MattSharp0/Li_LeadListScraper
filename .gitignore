@@ -6,3 +6,5 @@ excelfiles/
 *.xlsx
 notes.md
 tests/
+.vscode
+data.json

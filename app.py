@@ -24,7 +24,7 @@ def main(as_xlsx: bool = True, as_csv: bool = False):
         f'\n- Provided {total_lists} list link(s)\n- Begin scrape?', abort=True)
 
     # Supply credentials below:
-    # CREDENTIALS = {'USERNAME' : 'your_username', 'PASSWORD': 'your_password'}
+    # CREDENTIALS = {'USERNAME' : 'your_username_here', 'PASSWORD': 'your_password_here'}
 
     # set save path
     path = os.path.expanduser('~/Desktop/leads')

@@ -14,11 +14,15 @@ def write_to_csv(data_list, file_name, path=''):
     '''
     file_location = os.path.join(path, file_name + '_leads.csv')
 
+    data_for_csv = []
+    for lead in data_list:
+        name, company = lead[0], lead[2]
+        data_for_csv.append([name, company])
+
     with open(file_location, mode='w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(['First Name', 'Last Name', 'Title', 'Account',
-                        'Location', 'Link', 'Email', 'Phone'])
-        writer.writerows(data_list)
+        writer.writerow(['First Name', 'Last Name', 'Comapany'])
+        writer.writerows(data_for_csv)
 
 
 def write_to_excel(data_list, file_name, path=''):
