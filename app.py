@@ -1,6 +1,5 @@
 
 import os
-import json
 from src.wsdriver import WebScraperDriver, options
 from src.file_writer import write_to_excel, write_to_csv
 import typer
@@ -81,26 +80,6 @@ def main(as_xlsx: bool = True, as_csv: bool = False):
 
     typer.secho(
         f'\n- Completed scrape \n- Saved {total_leads} leads from {total_lists} lists')
-
-    # records a running total number of all lists and leads scraped
-    try:
-        with open('data.json',) as f:
-            previous_data = json.load(f)
-        print(previous_data)
-
-        program_data = {
-            'Lists scraped': (previous_data[0]['Lists scraped'] + total_lists),
-            'Leads scraped': (previous_data[0]['Leads scraped'] + total_leads)
-        }
-    except OSError:
-        program_data = {
-            'Lists scraped': total_lists,
-            'Leads scraped': total_leads
-        }
-
-    with open('data.json', 'w') as f:
-        json_string = json.dumps(program_data, indent=4)
-        f.write(json_string)
 
 
 #  Run using Typer for CLI args/options

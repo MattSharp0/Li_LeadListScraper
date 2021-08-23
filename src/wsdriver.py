@@ -150,7 +150,15 @@ class WebScraperDriver(webdriver.Chrome):
             except NoSuchElementException:
                 location = ''
 
-            lead_data.append([name, title, account, location, profile_link])
+            try:
+                lead_notes_element = row.find_element_by_class_name(
+                    'list-entity-notes__preview-text')
+                notes = lead_notes_element.text
+            except NoSuchElementException:
+                notes = ''
+
+            lead_data.append(
+                [name, title, account, location, notes, profile_link])
 
         return lead_data, len(table_rows)
 

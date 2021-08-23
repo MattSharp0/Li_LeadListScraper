@@ -16,12 +16,13 @@ def write_to_csv(data_list, file_name, path=''):
 
     data_for_csv = []
     for lead in data_list:
-        name, company = lead[0], lead[2]
-        data_for_csv.append([name, company])
+        csv_lead = [lead[0], lead[1], lead[3]]
+
+        data_for_csv.append(csv_lead)
 
     with open(file_location, mode='w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(['First Name', 'Last Name', 'Comapany'])
+        writer.writerow(['First Name', 'Last Name', 'Company'])
         writer.writerows(data_for_csv)
 
 
@@ -56,12 +57,13 @@ def write_to_excel(data_list, file_name, path=''):
     sheet.write('C2', 'Title')
     sheet.write('D2', 'Account')
     sheet.write('E2', 'Location')
-    sheet.write('F2', 'Link')
+    sheet.write('F2', 'Notes')
+    sheet.write('G2', 'Link')
 
     row, col = 2, 0
     for lead in xlsx_data_list:
         col = 0
-        while col < 6:
+        while col < 7:
             for item in lead:
                 sheet.write(row, col, item)
                 col += 1
