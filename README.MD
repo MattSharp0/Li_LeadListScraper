@@ -16,9 +16,6 @@ To get started:
 
 #### Improvements to make:
 
-- Include web driver install/setup instructions
-- Improve readme formatting & documentation
-- Setup as package
 - Improve CLI interface
 - ~~Write list names in full~~
 - ~~Split lead name into first - last~~
