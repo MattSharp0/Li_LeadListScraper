@@ -3,7 +3,7 @@ import os.path
 import csv
 
 
-def write_to_csv(data_list, file_name, path=''):
+def write_to_csv(data_list: list, domain: str, file_name: str, path: str = ''):
     '''
     Takes a list of links and writes them to a CSV file. Formatted for upload to Zoominfo Enhance
 
@@ -15,10 +15,16 @@ def write_to_csv(data_list, file_name, path=''):
     file_location = os.path.join(path, file_name + '_leads.csv')
 
     data_for_csv = []
-    for lead in data_list:
-        csv_lead = [lead[0], lead[1], lead[3]]
 
-        data_for_csv.append(csv_lead)
+    if domain:
+        for lead in data_list:
+            csv_lead = [lead[0], lead[1], domain]
+            data_for_csv.append(csv_lead)
+    else:
+        for lead in data_list:
+            csv_lead = [lead[0], lead[1], lead[3]]
+
+            data_for_csv.append(csv_lead)
 
     with open(file_location, mode='w', newline='') as f:
         writer = csv.writer(f)
@@ -26,7 +32,7 @@ def write_to_csv(data_list, file_name, path=''):
         writer.writerows(data_for_csv)
 
 
-def write_to_excel(data_list, file_name, path=''):
+def write_to_excel(data_list: list, file_name: str, path: str = ''):
     '''
     Takes a list of links and writes them to an .xlsx document
 
