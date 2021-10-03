@@ -3,6 +3,14 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
 
+import logging
+import sys
+
+# fmt_str = "%(asctime)s - %(name)s - %(levelname)-8s - %(message)s"
+# fmt_date_str = "%d/%m/%Y %H:%M"
+logging.basicConfig(filename='driver.log',
+                    encoding='utf-8', level=logging.DEBUG, filemode='w')
+
 options = Options()
 options.add_argument('--headless')
 options.add_argument('--window-size=1920x1080')
@@ -12,6 +20,7 @@ class WebScraperDriver(webdriver.Chrome):
     '''
     Extends webdriver class with specifc methods for navigating linkedin sales navigator
     '''
+    logging.info('WebScraperDriver class instance created')
 
     def sign_in(self, credentials):
         '''
@@ -23,13 +32,22 @@ class WebScraperDriver(webdriver.Chrome):
         :Returns:
         boolean requires_code: true if login code is required 
         '''
+
+        logging.info('sign_in called')
+
         username, password = credentials['USERNAME'], credentials['PASSWORD']
 
         # load sales navigator
         self.get('https://www.linkedin.com/sales')
 
-        WebDriverWait(self, 10).until(
-            lambda b: b.find_element_by_id('username'))
+        try:
+            WebDriverWait(self, 10).until(
+                lambda b: b.find_element_by_id('username'))
+        except NoSuchElementException as e:
+            logging.error(f'Sign-in page not found: {e}')
+            sys.exit(
+                'sign_in failed while loading sign in page. Check driver.log for details.')
+
         # Sign in
         username_box = self.find_element_by_id('username')
         username_box.send_keys(username)
@@ -39,13 +57,17 @@ class WebScraperDriver(webdriver.Chrome):
         signin_button = self.find_element_by_xpath(
             '//*[@id="app__container"]/main/div[2]/form/div[3]/button')
         signin_button.click()
+
         try:
             # Wait for homepage to load, then go to Lead lists
             WebDriverWait(self, 10).until(
                 lambda b: b.find_element_by_id('ember9'))
+        except WebDriverException as e:
+            logging.error(f'Homepage failed to load: {e}')
+            sys.exit(
+                'sign_in failed after submitting credentials. See driver.log for details.')
 
-        except WebDriverException:
-            print('\n- Error: Homepage failed to load')
+        logging.info('sign_in complete')
 
     def get_list_data(self):
         '''
@@ -56,6 +78,7 @@ class WebScraperDriver(webdriver.Chrome):
         int: number of pages
         list: page urls
         '''
+        logging.info('get_list_data called')
 
         # Wait for list title to load and save it
         WebDriverWait(self, 10).until(
@@ -80,11 +103,14 @@ class WebScraperDriver(webdriver.Chrome):
             page_url = f'?page={page}&'.join(page_split)
             page_urls.append(page_url)
 
+        logging.info(
+            f'get_list_data finished, found {pages} pages at {current_page_link}')
+
         return title, pages, page_urls
 
     def get_profile_links(self):
         '''
-        Finds and adds profile links to list
+        Finds and adds only profile links to list
 
         :Returns:
         list: current_page_links: a list of profile links from page
@@ -114,6 +140,9 @@ class WebScraperDriver(webdriver.Chrome):
         list: list of lead data lists
         int: total leads found
         '''
+
+        logging.info('get_lead_data called')
+
         WebDriverWait(self, 10).until(lambda b: b.find_elements_by_class_name(
             'lists-detail__view-profile-name-link'))
 
@@ -160,6 +189,8 @@ class WebScraperDriver(webdriver.Chrome):
             lead_data.append(
                 [name, title, account, location, notes, profile_link])
 
+        logging.info(f'Page scrape complete, {len(table_rows)} leads found.')
+
         return lead_data, len(table_rows)
 
     def scrape_lead_list(self, lead_list_link):
@@ -173,6 +204,8 @@ class WebScraperDriver(webdriver.Chrome):
         title: str of page title
         list_of_profile_links: list of all profile links from lead list
         '''
+
+        logging.info('scrape_lead_list called')
 
         self.get(lead_list_link)
 
@@ -189,5 +222,8 @@ class WebScraperDriver(webdriver.Chrome):
                 total_leads += leads_on_page
                 for lead in page_lead_data:
                     lead_data.append(lead)
+
+        logging.info(
+            f'scrape_lead_list finished {title} list, found {total_leads} leads.')
 
         return title, lead_data, total_leads
