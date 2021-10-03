@@ -7,4 +7,5 @@ excelfiles/
 notes.md
 tests/
 .vscode
-data.json
+driver.log
+chromedriver
