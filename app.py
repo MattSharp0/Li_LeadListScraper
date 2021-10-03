@@ -4,7 +4,7 @@ from src.wsdriver import WebScraperDriver, options
 from src.file_writer import write_to_excel, write_to_csv
 import typer
 # Remove below to run locally
-from config import CREDENTIALS
+from config import CREDENTIALS, CHROMEDRIVER_PATH
 
 
 def main(as_xlsx: bool = True, as_csv: bool = False):
@@ -22,8 +22,9 @@ def main(as_xlsx: bool = True, as_csv: bool = False):
     start = typer.confirm(
         f'\n- Provided {total_lists} list link(s)\n- Begin scrape?', abort=True)
 
-    # Supply credentials below:
+    # Supply credentials & path to chromedriver below:
     # CREDENTIALS = {'USERNAME' : 'your_username_here', 'PASSWORD': 'your_password_here'}
+    # CHROMEDRIVER_PATH = 'your_chromedriver_path_here'
 
     # set save path
     path = os.path.expanduser('~/Desktop/leads')
@@ -34,7 +35,7 @@ def main(as_xlsx: bool = True, as_csv: bool = False):
 
     # create Scraper Driver object
     if start:
-        with WebScraperDriver(options=options) as driver:
+        with WebScraperDriver(options=options, executable_path=CHROMEDRIVER_PATH) as driver:
             typer.secho('\n- Created chromedriver object')
 
             # Sign in with provided credentials
@@ -56,10 +57,10 @@ def main(as_xlsx: bool = True, as_csv: bool = False):
 
                     total_leads += number_of_leads
 
-                    # Format file name (note - the author uses '[]' in the linkedin list title for notes, these are removed below)
+                    # Remove list title notes. ex: list title [some note I wrote] -> list title
                     file_name = (list_title.split('[')[0]).strip()
 
-                    # Remove error causing characters
+                    # Removes error causing characters
                     for char in BAD_CHARS:
                         file_name = file_name.replace(char, '')
 
@@ -69,7 +70,9 @@ def main(as_xlsx: bool = True, as_csv: bool = False):
                                        file_name=file_name, path=path)
                     if as_csv:
                         # Write leads to CSV
-                        write_to_csv(data_list=lead_data,
+                        domain = typer.prompt(
+                            text=f'\nFor best result with Zoominfo Enhance, please provide the company domain for leads in list \'{list_title}\' \n(ex. for a list of google employees use google.com) \nLeave blank to use company name instead', default='')
+                        write_to_csv(data_list=lead_data, domain=domain,
                                      file_name=file_name, path=path)
 
                     typer.secho(
